@@ -1,10 +1,11 @@
 body {
-    background-color: #f8f9fa;
+    background-color: #f5f7fa;
 }
 
 h1 {
     margin-top: 30px;
     margin-bottom: 30px;
+    color: #2c3e50;
 }
 
 .circle-container {
@@ -21,39 +22,32 @@ h1 {
     border: none;
     font-size: 1.2em;
     color: #fff;
-    background-color: #007bff;
+    /* Current suggestions - deep blue with slight purple undertone */
+    background-color: #546de5;
     cursor: pointer;
-    /* Add these for consistent centering */
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-/* Style for non-button circles */
-div.circle-button {
-    /* Remove button-specific properties */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    /* Keep text centered */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* Prevent text selection */
-    user-select: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
 .circle-button.greyed {
-    background-color: #6c757d;
-    cursor: default;
+    /* Previous unchosen - warm grey */
+    background-color: #8395a7;
+    cursor: pointer;
+    opacity: 0.85;
 }
 
 .circle-button.chosen {
-    background-color: #28a745;
+    /* Chosen emotions - deep teal */
+    background-color: #10ac84;
 }
 
 .circle-button:hover {
-    opacity: 0.8;
+    opacity: 0.9;
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 }
 
 .emotion-set {
@@ -62,10 +56,29 @@ div.circle-button {
 
 .set-label {
     text-align: center;
-    color: #666;
+    color: #57606f;
     margin-bottom: 10px;
+    font-weight: 500;
 }
 
 textarea {
     resize: none;
+    border: 1px solid #8395a7;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.btn-success {
+    background-color: #10ac84;
+    border: none;
+    padding: 10px 25px;
+    font-size: 1.1em;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #0d916f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 }

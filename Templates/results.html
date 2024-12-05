@@ -6,13 +6,20 @@
     </div>
 
     {% if previous_sets %}
-        {% for emotion_set in previous_sets %}
+        {% for set_index in range(previous_sets|length) %}
             <div class="emotion-set">
                 <div class="circle-container">
-                    {% for emotion in emotion_set %}
-                        <div class="circle-button greyed">
-                            {{ emotion }}
-                        </div>
+                    {% for emotion in previous_sets[set_index] %}
+                        <form method="post" action="{{ url_for('rewind_to_emotion') }}">
+                            <input type="hidden" name="user_input" value="{{ user_input }}">
+                            <input type="hidden" name="target_set_index" value="{{ set_index }}">
+                            <button type="submit" 
+                                class="circle-button {% if emotion in chosen_emotions %}chosen{% else %}greyed{% endif %}" 
+                                name="target_emotion" 
+                                value="{{ emotion }}">
+                                {{ emotion }}
+                            </button>
+                        </form>
                     {% endfor %}
                 </div>
             </div>

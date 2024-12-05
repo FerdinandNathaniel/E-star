@@ -46,6 +46,7 @@ def first_pass():
     session['previous_emotions'] = []
     session['chosen_emotions'] = []
     session['original_user_input'] = user_input
+    session['user_input'] = user_input
 
     # Get recommended_emotions
     recommended_emotions = utils.find_relevant_emotions(
@@ -128,7 +129,63 @@ def get_emotions():
                            user_input=user_input, 
                            previous_sets = previous_sets,
                            chosen_emotion=chosen_emotion, 
+                           chosen_emotions=chosen_emotions,
                            original_user_input=original_user_input)
+
+@app.route('/rewind', methods=['POST'])
+def rewind_to_emotion():
+    # Get target emotion and set index
+    target_emotion = request.form.get('target_emotion')
+    target_set_index = int(request.form.get('target_set_index'))
+    
+    # Get current state
+    previous_emotions = session['previous_emotions']
+    chosen_emotions = session['chosen_emotions']
+    original_user_input = session['original_user_input']
+    
+    # Calculate where to rewind to
+    emotions_per_set = 3
+    target_index = (target_set_index * emotions_per_set) + previous_emotions[target_set_index * emotions_per_set:
+                                                                             (target_set_index + 1) * emotions_per_set].index(target_emotion)
+    
+    # Rewind the states
+    previous_emotions = previous_emotions[:target_index + emotions_per_set]  # Keep the full set where target is
+    chosen_emotions = chosen_emotions[:target_set_index]
+    chosen_emotions.append(target_emotion)
+    
+    # Reconstruct user input from the beginning
+    user_input = original_user_input
+    for i in range(0, len(chosen_emotions)):
+        set_start = i * emotions_per_set
+        current_set = previous_emotions[set_start:set_start + emotions_per_set]
+        chosen = chosen_emotions[i]
+        others = [e for e in current_set if e != chosen]
+        user_input += f" I feel that '{chosen}' describes my experience better than '{others[0]}' and '{others[1]}'."
+    
+    # Update session
+    session['previous_emotions'] = previous_emotions
+    session['chosen_emotions'] = chosen_emotions
+    session['user_input'] = user_input
+    session.modified = True
+    
+    # Create sets of previous emotions
+    previous_sets = [previous_emotions[i:i+3] for i in range(0, len(previous_emotions)-3, 3)]
+    
+    # Get new recommendations based on rewound state
+    recommended_emotions = utils.find_relevant_emotions(
+        user_input=user_input,
+        emotion_list=emotion_list,
+        previous_emotions=previous_emotions,
+        openai_client=client,
+        faiss_index=faiss_index
+    )
+    
+    return render_template('results.html',
+                            emotions=recommended_emotions,
+                            user_input=user_input,
+                            previous_sets=previous_sets,
+                            chosen_emotions=chosen_emotions,
+                            original_user_input=original_user_input)
 
 @app.route('/finish', methods=['POST'])
 def finish():
