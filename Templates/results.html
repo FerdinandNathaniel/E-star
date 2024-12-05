@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1 class="text-center">Emotion Recommender</h1>
+    <div class="text-center">
+        <p>{{ original_user_input }}</p>
+    </div>
+    <div class="circle-container">
+        {% for emotion in emotions %}
+            <form method="post" action="{{ url_for('get_emotions') }}">
+                <input type="hidden" name="user_input" value="{{ user_input }}">
+                <button type="submit" class="circle-button", name="chosen_emotion", value="{{ emotion }}">
+                    {{ emotion }}
+                </button>
+            </form>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-3">
+        <form method="post" action="{{ url_for('finish') }}">
+            <input type="hidden" name="user_input" value="{{ user_input }}">
+            <button type="submit" class="btn btn-success">Finished</button>
+        </form>
+    </div>
+{% endblock %}

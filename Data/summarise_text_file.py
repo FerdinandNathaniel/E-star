@@ -8,6 +8,9 @@ from typing import Tuple, Optional
 import re
 from openai import OpenAI
 
+# Big problem: chunk sizes/paragraphs too small, regex needs a look over,
+# currently get multiple rows per emotion with large paragraph
+
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -55,7 +58,8 @@ class EmotionProcessor:
             response = self.client.chat.completions.create(
                 model="gpt-4o-2024-11-20",
                 messages=[
-                    {"role": "system", "content": "You are a precise assistant that extracts and summarizes emotion descriptions while maintaining their essential meaning."},
+                    {"role": "system", "content": "You are a precise assistant that extracts and summarizes"
+                     + " emotion descriptions while maintaining their essential meaning."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.3,  # Lower temperature for more consistent outputs

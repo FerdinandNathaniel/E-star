@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1 class="text-center">Emotion Recommender</h1>
+    <form method="post" action="{{ url_for('first_pass') }}">
+        <div class="form-group">
+            <textarea class="form-control" name="user_input" rows="5" placeholder="Describe your experience here..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+    </form>
+{% endblock %}
