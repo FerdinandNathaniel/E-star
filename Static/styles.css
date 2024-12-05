@@ -23,6 +23,24 @@ h1 {
     color: #fff;
     background-color: #007bff;
     cursor: pointer;
+    /* Add these for consistent centering */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Style for non-button circles */
+div.circle-button {
+    /* Remove button-specific properties */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* Keep text centered */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Prevent text selection */
+    user-select: none;
 }
 
 .circle-button.greyed {
@@ -36,6 +54,16 @@ h1 {
 
 .circle-button:hover {
     opacity: 0.8;
+}
+
+.emotion-set {
+    margin: 30px 0;
+}
+
+.set-label {
+    text-align: center;
+    color: #666;
+    margin-bottom: 10px;
 }
 
 textarea {

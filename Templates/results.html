@@ -4,16 +4,36 @@
     <div class="text-center">
         <p>{{ original_user_input }}</p>
     </div>
-    <div class="circle-container">
-        {% for emotion in emotions %}
-            <form method="post" action="{{ url_for('get_emotions') }}">
-                <input type="hidden" name="user_input" value="{{ user_input }}">
-                <button type="submit" class="circle-button", name="chosen_emotion", value="{{ emotion }}">
-                    {{ emotion }}
-                </button>
-            </form>
+
+    {% if previous_sets %}
+        {% for emotion_set in previous_sets %}
+            <div class="emotion-set">
+                <div class="circle-container">
+                    {% for emotion in emotion_set %}
+                        <div class="circle-button greyed">
+                            {{ emotion }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         {% endfor %}
-    </div>
+    {% endif %}
+
+    {% if emotions %}
+        <div class="emotion-set">
+            <div class="circle-container">
+                {% for emotion in emotions %}
+                    <form method="post" action="{{ url_for('get_emotions') }}">
+                        <input type="hidden" name="user_input" value="{{ user_input }}">
+                        <button type="submit" class="circle-button" name="chosen_emotion" value="{{ emotion }}">
+                            {{ emotion }}
+                        </button>
+                    </form>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
     <div class="text-center mt-3">
         <form method="post" action="{{ url_for('finish') }}">
             <input type="hidden" name="user_input" value="{{ user_input }}">
