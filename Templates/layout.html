@@ -9,11 +9,132 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        {% block content %}{% endblock %}
+    <div class="container-fluid">
+        <div class="row">
+            {% if request.endpoint != 'index' %}
+            <div class="col-md-3 sidebar left-sidebar">
+                <div id="emotion-description" class="description-panel">
+                    <h4>Guidelines</h4>
+                    <div id="guidelines-text">
+                        <p>I did a baba!</p>
+                        <p>More text about how this burbur works.</p>
+                        <p>Hover over an emotion to see its description.</p>
+                    </div>
+                    <div id="description-text" style="display: none;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+            {% else %}
+            <div class="col-md-12">
+            {% endif %}
+                {% block content %}{% endblock %}
+            </div>
+            {% if request.endpoint != 'index' %}
+            <div class="col-md-3 sidebar right-sidebar">
+                <div class="sidebar-content">
+                    <div id="collection-panel" class="description-panel">
+                        <h4>My Collection</h4>
+                        <div id="collection-list">
+                            {% if session.collection %}
+                                {% for emotion in session.collection %}
+                                    <div class="collection-item" data-emotion="{{ emotion }}">
+                                        <span>{{ emotion }}</span>
+                                        <button class="remove-from-collection" data-emotion="{{ emotion }}">×</button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="finish-button-container">
+                        <form method="post" action="{{ url_for('finish') }}">
+                            <input type="hidden" name="user_input" value="{{ user_input }}">
+                            <button type="submit" class="btn btn-success btn-block">Finished</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
     <!-- jQuery and Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     {% block scripts %}{% endblock %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.circle-button');
+            const descriptionText = document.getElementById('description-text');
+            const guidelinesText = document.getElementById('guidelines-text');
+            
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    descriptionText.innerHTML = this.getAttribute('data-description');
+                    guidelinesText.style.display = 'none';
+                    descriptionText.style.display = 'block';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    guidelinesText.style.display = 'block';
+                    descriptionText.style.display = 'none';
+                });
+            });
+
+            // New collection functionality
+            function updateCollection(action, emotion) {
+                // Check if emotion is already in collection
+                const existingItem = document.querySelector(`.collection-item[data-emotion="${emotion}"]`);
+                if (action === 'add' && existingItem) {
+                    return; // Don't add if already exists
+                }
+
+                fetch('/update_collection', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action, emotion })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const collectionList = document.getElementById('collection-list');
+                        if (action === 'add') {
+                            const div = document.createElement('div');
+                            div.className = 'collection-item';
+                            div.dataset.emotion = emotion;
+                            div.innerHTML = `
+                                <span>${emotion}</span>
+                                <button class="remove-from-collection" data-emotion="${emotion}">×</button>
+                            `;
+                            collectionList.appendChild(div);
+                            
+                            // Update all add buttons for this emotion
+                            document.querySelectorAll(`.add-to-collection[data-emotion="${emotion}"]`)
+                                .forEach(btn => btn.classList.add('in-collection'));
+                        } else {
+                            existingItem.remove();
+                            // Update all add buttons for this emotion
+                            document.querySelectorAll(`.add-to-collection[data-emotion="${emotion}"]`)
+                                .forEach(btn => btn.classList.remove('in-collection'));
+                        }
+                    }
+                });
+            }
+
+            // Add initial in-collection class to buttons
+            document.querySelectorAll('.add-to-collection').forEach(btn => {
+                const emotion = btn.dataset.emotion;
+                if (document.querySelector(`.collection-item[data-emotion="${emotion}"]`)) {
+                    btn.classList.add('in-collection');
+                }
+            });
+
+            // Add collection button handlers
+            document.body.addEventListener('click', function(e) {
+                if (e.target.classList.contains('add-to-collection')) {
+                    updateCollection('add', e.target.dataset.emotion);
+                } else if (e.target.classList.contains('remove-from-collection')) {
+                    updateCollection('remove', e.target.dataset.emotion);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

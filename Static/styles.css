@@ -14,11 +14,20 @@ h1 {
     flex-wrap: wrap;
 }
 
+.emotion-button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+    position: relative;  /* Change to relative positioning */
+    padding-bottom: 15px;  /* Add padding to account for absolute positioned button */
+}
+
 .circle-button {
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    margin: 10px;
+    margin: 0;  /* Remove margin */
     border: none;
     font-size: 1.2em;
     color: #fff;
@@ -30,6 +39,7 @@ h1 {
     justify-content: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    position: relative;  /* Add this */
 }
 
 .circle-button.greyed {
@@ -48,6 +58,10 @@ h1 {
     opacity: 0.9;
     transform: scale(1.05);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.circle-button:hover .add-to-collection {
+    opacity: 1;
 }
 
 .emotion-set {
@@ -81,4 +95,130 @@ textarea {
     background-color: #0d916f;
     transform: translateY(-2px);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Remove the [title] related styles and add these new styles */
+.sidebar {
+    background-color: #fff;
+    min-height: 100vh;
+    border-right: 1px solid #dee2e6;
+    padding: 20px;
+}
+
+.description-panel {
+    position: sticky;
+    top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.description-panel h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+#description-text {
+    color: #57606f;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+.right-sidebar {
+    border-left: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    right: 0;
+    width: inherit;
+    padding: 20px;
+}
+
+.sidebar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+#collection-panel {
+    flex: 1;
+    margin-bottom: 20px;
+    overflow-y: auto;
+}
+
+.finish-button-container {
+    position: sticky;
+    bottom: 0;
+    background-color: #fff;
+    padding: 20px 0;
+    margin-top: auto;
+    border-top: 1px solid #dee2e6;
+}
+
+.collection-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 5px 0;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.add-to-collection {
+    position: absolute;  /* Change back to absolute */
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;  /* Make it smaller and circular */
+    height: 30px;
+    border-radius: 50%;  /* Make it circular */
+    background-color: white;
+    color: #546de5;
+    border: 2px solid currentColor;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-to-collection:hover {
+    background-color: #546de5;
+    color: white;
+    transform: translateX(-50%) scale(1.1);
+}
+
+.add-to-collection.in-collection {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    color: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.add-to-collection.in-collection:hover {
+    background-color: #e9ecef;
+    color: #adb5bd;
+    transform: translateX(-50%);
+}
+
+.remove-from-collection {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.remove-from-collection:hover {
+    color: #ff5252;
 }

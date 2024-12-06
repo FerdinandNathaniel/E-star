@@ -29,9 +29,10 @@ def get_emotion_list(df_embeddings):
     return df_embeddings['Emotion'].tolist()
 
 def find_relevant_emotions(user_input, emotion_list, openai_client, faiss_index, previous_emotions=[], top_k=3):
-    # BUILD IN SOMETHING FOR WHEN END OF LIST IS REACHED WRT RECOMMENDED EMOTIONS
+    """Find relevant emotions based on user input and previous selections."""
     # Generate embedding for the user input
-    user_embedding = get_embedding(user_input, openai_client)
+    user_input_modified = 'This is a description of my experience: ' + user_input
+    user_embedding = get_embedding(user_input_modified, openai_client)
     user_embedding = np.array(user_embedding, dtype='float32').reshape(1, -1)
     distances, indices = faiss_index.search(user_embedding, len(emotion_list))
     
@@ -39,9 +40,13 @@ def find_relevant_emotions(user_input, emotion_list, openai_client, faiss_index,
     recommended_emotions = []
     for idx in indices[0]:
         emotion = emotion_list[idx]
-        if emotion not in previous_emotions:
+        if emotion not in previous_emotions and emotion not in recommended_emotions:
             recommended_emotions.append(emotion)
         if len(recommended_emotions) == top_k:
             break
-        
+    
+    if not recommended_emotions:
+        # Handle end of list
+        return []
+    
     return recommended_emotions

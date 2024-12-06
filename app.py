@@ -4,8 +4,7 @@ from openai import OpenAI
 import pandas as pd
 import numpy as np
 import faiss
-from flask import Flask, render_template, request, redirect, url_for, session
-from flask_caching import Cache
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 
 import utils as utils
 
@@ -26,8 +25,9 @@ df_embeddings = pd.read_pickle('Data/Processed/' + dataset_embeddings + '.pkl')
 faiss_index = utils.get_faiss_index(df_embeddings)
 emotion_list = df_embeddings['Emotion'].tolist()
 
-# TO-DO: set number of emotions to show
-# num_emotions = 3
+def get_descriptions(emotions):
+    return {emotion: f"<strong>{emotion}</strong><br>{df_embeddings.loc[df_embeddings['Emotion'] == emotion, 'Description'].iloc[0]}"
+            for emotion in emotions}
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -47,6 +47,7 @@ def first_pass():
     session['chosen_emotions'] = []
     session['original_user_input'] = user_input
     session['user_input'] = user_input
+    session['collection'] = []
 
     # Get recommended_emotions
     recommended_emotions = utils.find_relevant_emotions(
@@ -61,14 +62,14 @@ def first_pass():
     for emotion in recommended_emotions:
         previous_emotions.append(emotion)
     
-    print(f"User input: {user_input}\nRecommended emotions: {recommended_emotions}\nPrevious emotions: {previous_emotions}")
-
+    descriptions = get_descriptions(recommended_emotions)
     return render_template('results.html', 
                            emotions=recommended_emotions, 
                            user_input=user_input, 
                            previous_sets=[],
                            current_prompt=user_input, 
-                           original_user_input=user_input)
+                           original_user_input=user_input,
+                           descriptions=descriptions)
 
 
 @app.route('/wandering', methods=['POST'])
@@ -116,21 +117,25 @@ def get_emotions():
     
     # If no new emotions, inform the user
     if not recommended_emotions:
+        descriptions = get_descriptions(recommended_emotions + previous_emotions)
         return render_template('results.html', 
                                 emotions=recommended_emotions, 
                                 message="No new emotions found",
                                 user_input=user_input, 
                                 previous_sets = previous_sets,
                                 chosen_emotion=chosen_emotion, 
-                                original_user_input=original_user_input)
+                                original_user_input=original_user_input,
+                                descriptions=descriptions)
 
+    descriptions = get_descriptions(recommended_emotions + previous_emotions)
     return render_template('results.html', 
                            emotions=recommended_emotions, 
                            user_input=user_input, 
                            previous_sets = previous_sets,
                            chosen_emotion=chosen_emotion, 
                            chosen_emotions=chosen_emotions,
-                           original_user_input=original_user_input)
+                           original_user_input=original_user_input,
+                           descriptions=descriptions)
 
 @app.route('/rewind', methods=['POST'])
 def rewind_to_emotion():
@@ -149,13 +154,17 @@ def rewind_to_emotion():
                                                                              (target_set_index + 1) * emotions_per_set].index(target_emotion)
     
     # Rewind the states
-    previous_emotions = previous_emotions[:target_index + emotions_per_set]  # Keep the full set where target is
+    # If emotion on first row is clicked, special case scenario......
+    # Calculate end index based on target_index ranges
+    end_index = ((target_index // 3) + 1) * 3 - 1  # 3 is emotions_per_set
+    previous_emotions = previous_emotions[:end_index + 1]
+
     chosen_emotions = chosen_emotions[:target_set_index]
     chosen_emotions.append(target_emotion)
     
     # Reconstruct user input from the beginning
     user_input = original_user_input
-    for i in range(0, len(chosen_emotions)):
+    for i in range(len(chosen_emotions)):
         set_start = i * emotions_per_set
         current_set = previous_emotions[set_start:set_start + emotions_per_set]
         chosen = chosen_emotions[i]
@@ -169,7 +178,7 @@ def rewind_to_emotion():
     session.modified = True
     
     # Create sets of previous emotions
-    previous_sets = [previous_emotions[i:i+3] for i in range(0, len(previous_emotions)-3, 3)]
+    previous_sets = [previous_emotions[i:i+3] for i in range(0, len(previous_emotions), 3)]
     
     # Get new recommendations based on rewound state
     recommended_emotions = utils.find_relevant_emotions(
@@ -180,12 +189,18 @@ def rewind_to_emotion():
         faiss_index=faiss_index
     )
     
+    # Append recommended_emotions to previous_emotions
+    for emotion in recommended_emotions:
+        previous_emotions.append(emotion)
+    
+    descriptions = get_descriptions(recommended_emotions + previous_emotions)
     return render_template('results.html',
                             emotions=recommended_emotions,
                             user_input=user_input,
                             previous_sets=previous_sets,
                             chosen_emotions=chosen_emotions,
-                            original_user_input=original_user_input)
+                            original_user_input=original_user_input,
+                            descriptions=descriptions)
 
 @app.route('/finish', methods=['POST'])
 def finish():
@@ -193,6 +208,25 @@ def finish():
     user_input = request.form.get('user_input')
     selected_emotions = request.form.get('selected_emotions', '').split(',')
     return render_template('results.html', emotions=[], message="Process finished.", user_input=user_input, selected_emotions=selected_emotions, previous_emotions=[], chosen_emotion=None, current_prompt=user_input)
+
+@app.route('/update_collection', methods=['POST'])
+def update_collection():
+    data = request.get_json()
+    action = data.get('action')
+    emotion = data.get('emotion')
+    
+    # can prob be removed
+    if 'collection' not in session:
+        session['collection'] = []
+    
+    if action == 'add' and emotion not in session['collection']:
+        session['collection'].append(emotion)
+        session.modified = True
+    elif action == 'remove' and emotion in session['collection']:
+        session['collection'].remove(emotion)
+        session.modified = True
+    
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     app.run(debug=True)

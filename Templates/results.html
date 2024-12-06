@@ -11,14 +11,18 @@
                 <div class="circle-container">
                     {% for emotion in previous_sets[set_index] %}
                         <form method="post" action="{{ url_for('rewind_to_emotion') }}">
-                            <input type="hidden" name="user_input" value="{{ user_input }}">
-                            <input type="hidden" name="target_set_index" value="{{ set_index }}">
-                            <button type="submit" 
-                                class="circle-button {% if emotion in chosen_emotions %}chosen{% else %}greyed{% endif %}" 
-                                name="target_emotion" 
-                                value="{{ emotion }}">
-                                {{ emotion }}
-                            </button>
+                            <div class="emotion-button-container">
+                                <input type="hidden" name="user_input" value="{{ user_input }}">
+                                <input type="hidden" name="target_set_index" value="{{ set_index }}">
+                                <button type="submit" 
+                                    class="circle-button {% if emotion in chosen_emotions %}chosen{% else %}greyed{% endif %}" 
+                                    name="target_emotion" 
+                                    value="{{ emotion }}"
+                                    data-description="{{ descriptions[emotion] }}">
+                                    {{ emotion }}
+                                </button>
+                                <button class="add-to-collection" data-emotion="{{ emotion }}" type="button">+</button>
+                            </div>
                         </form>
                     {% endfor %}
                 </div>
@@ -31,20 +35,20 @@
             <div class="circle-container">
                 {% for emotion in emotions %}
                     <form method="post" action="{{ url_for('get_emotions') }}">
-                        <input type="hidden" name="user_input" value="{{ user_input }}">
-                        <button type="submit" class="circle-button" name="chosen_emotion" value="{{ emotion }}">
-                            {{ emotion }}
-                        </button>
+                        <div class="emotion-button-container">
+                            <input type="hidden" name="user_input" value="{{ user_input }}">
+                            <button type="submit" 
+                                    class="circle-button" 
+                                    name="chosen_emotion" 
+                                    value="{{ emotion }}"
+                                    data-description="{{ descriptions[emotion] }}">
+                                {{ emotion }}
+                            </button>
+                            <button class="add-to-collection" data-emotion="{{ emotion }}" type="button">+</button>
+                        </div>
                     </form>
                 {% endfor %}
             </div>
         </div>
     {% endif %}
-
-    <div class="text-center mt-3">
-        <form method="post" action="{{ url_for('finish') }}">
-            <input type="hidden" name="user_input" value="{{ user_input }}">
-            <button type="submit" class="btn btn-success">Finished</button>
-        </form>
-    </div>
 {% endblock %}
