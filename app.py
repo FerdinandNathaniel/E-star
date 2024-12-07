@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import faiss
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from printing import print_emotion_collection
 
 import utils as utils
 
@@ -206,8 +207,23 @@ def rewind_to_emotion():
 def finish():
     # Get final data
     user_input = request.form.get('user_input')
-    selected_emotions = request.form.get('selected_emotions', '').split(',')
-    return render_template('results.html', emotions=[], message="Process finished.", user_input=user_input, selected_emotions=selected_emotions, previous_emotions=[], chosen_emotion=None, current_prompt=user_input)
+    
+    if session.get('collection'):
+        # Get descriptions without HTML formatting for printing
+        plain_descriptions = {
+            emotion: df_embeddings.loc[df_embeddings['Emotion'] == emotion, 'Description'].iloc[0]
+            for emotion in session['collection']
+        }
+        # Print the collection
+        print_emotion_collection(session['collection'], plain_descriptions)
+    
+    return render_template('results.html', 
+                         emotions=[], 
+                         message="Process finished and collection printed.", 
+                         user_input=user_input, 
+                         previous_emotions=[], 
+                         chosen_emotion=None, 
+                         current_prompt=user_input)
 
 @app.route('/update_collection', methods=['POST'])
 def update_collection():
