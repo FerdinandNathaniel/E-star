@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Emotion Recommender</title>
+    <title>E*star</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <!-- Custom CSS -->
@@ -13,15 +13,30 @@
         <div class="row">
             {% if request.endpoint != 'index' %}
             <div class="col-md-3 sidebar left-sidebar">
+                <div class="back-button-container">
+                    <form method="post" action="{{ url_for('index') }}">
+                        <button type="submit" class="btn btn-success btn-block">Go back</button>
+                    </form>
+                </div>
                 <div id="emotion-description" class="description-panel">
-                    <h4>Guidelines</h4>
+                    <h4>Welcome to E*star!</h4>
                     <div id="guidelines-text">
-                        <p>I did a baba!</p>
-                        <p>More text about how this burbur works.</p>
-                        <p>Hover over an emotion to see its description.</p>
+                        <p>The goal of E*star is to find and collect words that together describe an experience you've had.</p>
+                        <p>Here's how to use this system:</p>
+                        <ul>
+                            <li><strong>Hover</strong> over an emotion to view its description.</li>
+                            <li><strong>Click</strong> an emotion to select it as the best fit compared to the other two.</li>
+                            <li><strong>Skip</strong> emotions to indicate none get closer to describing your experience.</li>
+                            <li><strong>Add</strong> emotions to your collection by using the '<strong>+</strong>' button.</li>
+                            <li><strong>Remove</strong> emotions from your collection by clicking the red '<strong>×</strong>' next to them.</li>
+                            <li><strong>Print</strong> your collection to a receipt by clicking the <strong>Finish</strong> button.</li>
+                        </ul>
+
+                        <p><small><em><strong>Hint</strong>: you can go back and click on other emotions to see how the results change! Your collection will not be affected, so peruse to your heart's content-</em></small></p>
                     </div>
                     <div id="description-text" style="display: none;"></div>
                 </div>
+
             </div>
             <div class="col-md-6">
             {% else %}
@@ -134,6 +149,16 @@
                     updateCollection('remove', e.target.dataset.emotion);
                 }
             });
+            
+            // Add finish form handler
+            const finishForm = document.querySelector('form[action="/finish"]');
+            if (finishForm) {
+                finishForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('You are finished! Take your receipt.');
+                    this.submit();
+                });
+            }    
         });
     </script>
 </body>

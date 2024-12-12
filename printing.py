@@ -1,6 +1,7 @@
 import subprocess
 import tempfile
 import os
+import time
 
 class ESC:
     # Printer initialization
@@ -69,7 +70,7 @@ def print_receipt(text, options=None):
     
     # Add extra feed at the end before cutting
     feed_end = options.get('feed_end', 30)  # Default 30 dots
-    formatted_text += ESC.FEED_UNITS + chr(feed_end) + ESC.CUT_PAPER
+    formatted_text += ESC.FEED_UNITS + chr(feed_end)
     
     # Create a temporary file
     with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
@@ -125,19 +126,18 @@ def print_formatted_receipt():
 
 def print_full_receipt():
     receipt = (
+        "\n\n\n\n\n" +
         ESC.ALIGN_CENTER +
-        ESC.BOLD_ON + ESC.DOUBLE_WIDTH_ON +
-        "STORE NAME\n" +
-        ESC.NORMAL_SIZE + ESC.BOLD_OFF +
-        "123 Main Street\n" +
-        "Tel: 555-1234\n\n" +
+        "Testing receipt\n" +
+        "Leven is mooi\n" +
+        "Life is life\n\n" +
         ESC.ALIGN_LEFT +
         "Order #: 1234\n" +
-        "Date: 2024-12-06\n" +
+        "Date: today\n" +
         "-----------------\n" +
         "Items:\n" +
-        "1x Widget      $10.00\n" +
-        "2x Gadget      $30.00\n" +
+        "1x Emotions      $10.00\n" +
+        "2x Tech stuff    $30.00\n" +
         "-----------------\n" +
         ESC.ALIGN_RIGHT +
         "Total: $40.00\n"
@@ -147,27 +147,29 @@ def print_full_receipt():
         'copies': 1,
         'spacing': 24,
         'feed_lines': 4,
-        'feed_end': 100  # Increase this value for more feed at the end
+        'feed_end': 50  # Increase this value for more feed at the end
     }
+    
+    time.sleep(0.5)
     
     print_receipt(receipt, options)
 
-def print_emotion_collection(emotions, descriptions):
+def print_emotion_collection(df_embeddings, original_user_input, emotions, descriptions):
     """Print a receipt containing the collected emotions and their descriptions."""
     receipt = (
         ESC.INIT +
         ESC.ALIGN_CENTER +
-        ESC.BOLD_ON + ESC.DOUBLE_WIDTH_ON +
-        "MY EMOTIONS\n" +
-        ESC.NORMAL_SIZE + ESC.BOLD_OFF +
+        "-----------------\n\n\n" +
+        f"'{original_user_input}'\n\n\n" +
         "-----------------\n\n" +
         ESC.ALIGN_LEFT
     )
     
     for emotion in emotions:
+        language = df_embeddings.loc[df_embeddings['Emotion'] == emotion, 'Language'].iloc[0]
         receipt += (
             ESC.BOLD_ON +
-            f"{emotion}\n" +
+            f"{emotion} [{language}]\n" +
             ESC.BOLD_OFF +
             f"{descriptions[emotion]}\n\n"
         )
@@ -179,11 +181,10 @@ def print_emotion_collection(emotions, descriptions):
         'spacing': 24,
         'align': 'left',
         'feed_lines': 4,
-        'feed_end': 100
+        'feed_end': 50
     }
+    
+    time.sleep(0.5)
     
     print_receipt(receipt, options)
 
-# Choose which version to run
-# print_formatted_receipt()  # For the formatted example
-print_full_receipt()    # For the full receipt example

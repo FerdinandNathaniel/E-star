@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-    <h1 class="text-center">Emotion Recommender</h1>
+    <h1 class="text-center estar-title">E*star</h1>
     <div class="text-center">
         <p>{{ original_user_input }}</p>
     </div>
@@ -49,6 +49,14 @@
                     </form>
                 {% endfor %}
             </div>
+            <form method="post" action="{{ url_for('skip_emotions') }}">
+                <div class="skip-button-container">
+                    <input type="hidden" name="user_input" value="{{ user_input }}">
+                    <button type="submit" class="btn btn-secondary skip-button">
+                        Skip these emotions
+                    </button>
+                </div>
+            </form>
         </div>
     {% endif %}
 {% endblock %}
