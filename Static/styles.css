@@ -1,3 +1,16 @@
+/* Set colour variables for easy colour swapping */
+:root {
+    --background-color-1: #f5f5f5;
+    --background-color-2: #e2e2df;
+    --primary-color: #f5f5f5;
+    --secondary-color: #56494c;
+    --tertiary-color: #3a2e39;
+    --grey-color: #f5f5f5;
+    --text-color: #56494c;
+    --sidebar-text-color: #57606f;
+    --remove-color: #ac5656;
+}
+
 body, html {
     height: 100%;
     margin: 0;
@@ -11,18 +24,6 @@ h1 {
     margin-top: 30px;
     margin-bottom: 30px;
     color: var(--tertiary-color);
-}
-
-:root {
-    --background-color-1: #f5f5f5;
-    --background-color-2: #e2e2df;
-    --primary-color: #f5f5f5;
-    --secondary-color: #56494c;
-    --tertiary-color: #3a2e39;
-    --grey-color: #f5f5f5;
-    --text-color: #56494c;
-    --sidebar-text-color: #57606f;
-    --remove-color: #ac5656;
 }
 
 .estar-title {
@@ -63,19 +64,18 @@ h1 {
     flex-direction: column;
     align-items: center;
     margin: 10px;
-    position: relative;  /* Change to relative positioning */
-    padding-bottom: 15px;  /* Add padding to account for absolute positioned button */
+    position: relative;
+    padding-bottom: 15px;
 }
 
 .circle-button {
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    margin: 0;  /* Remove margin */
+    margin: 0;
     border: none;
     font-size: 1.2em;
     color: var(--text-color);
-    /* Current suggestions - deep blue with slight purple undertone */
     background-color: var(--primary-color);
     cursor: pointer;
     display: flex;
@@ -150,10 +150,6 @@ textarea {
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 }
 
-.btn-success:active {
-    background-color: #FF5733; /* Replace with your desired color */
-}
-
 .sidebar {
     background-color: var(--background-color-2);
     min-height: 100vh;
@@ -171,7 +167,7 @@ textarea {
 }
 
 .description-panel h4 {
-    color: #2c3e50;
+    color: var(--tertiary-color);
     margin-bottom: 15px;
 }
 
@@ -200,7 +196,7 @@ textarea {
 }
 
 .right-sidebar {
-    border-left: 1px solid #dee2e6;
+    border-left: var(--background-color-2);
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -253,13 +249,13 @@ textarea {
 }
 
 .add-to-collection {
-    position: absolute;  /* Change back to absolute */
+    position: absolute;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 30px;  /* Make it smaller and circular */
+    width: 30px;
     height: 30px;
-    border-radius: 50%;  /* Make it circular */
+    border-radius: 50%;
     background-color: white;
     color: var(--secondary-color);
     border: 2px solid var(--background-color-2);
