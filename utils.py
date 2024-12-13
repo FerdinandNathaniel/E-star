@@ -1,6 +1,6 @@
 import numpy as np
 import faiss
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import render_template, jsonify
 
 from printing import print_emotion_collection
 
@@ -15,12 +15,22 @@ def get_embedding(description, client, model="text-embedding-3-large"):
     Returns:
         CreateEmbeddingResponse: class representing metadata and the embedding itself
     """
+    
     # new lines can cause problems with accurate embedding
     description = str(description).replace("\n", " ")
     
     return client.embeddings.create(input = description, model = model).data[0].embedding
 
 def get_faiss_index(df_embeddings):
+    """Create a Faiss index from the embeddings in the dataframe.
+
+    Args:
+        df_embeddings (pandas.core.frame.DataFrame): DataFrame of embeddings and metadata
+
+    Returns:
+        faiss.swigfaiss.IndexFlatL2: FAISS index of the embeddings
+    """
+    
     embedding_dim = len(df_embeddings['Embedding'].iloc[0])
     embedding_matrix = np.array(df_embeddings['Embedding'].tolist()).astype('float32')
     faiss_index = faiss.IndexFlatL2(embedding_dim)
@@ -28,11 +38,20 @@ def get_faiss_index(df_embeddings):
     
     return faiss_index
 
-def get_emotion_list(df_embeddings):
-    return df_embeddings['Emotion'].tolist()
-
 def find_relevant_emotions(user_input, emotion_list, client, faiss_index, previous_emotions=[]):
-    """Find relevant emotions based on user input and previous selections."""
+    """Find relevant emotions based on user input and previous selections.
+    
+    Args:
+        user_input (str): user input to generate embeddings from
+        emotion_list (list): list of emotions to choose from
+        client (OpenAI): OpenAI API client
+        faiss_index (faiss.swigfaiss.IndexFlatL2): FAISS index of embeddings
+        previous_emotions (list, optional): list of previously selected emotions. Defaults to [].
+
+    Returns:
+        list: list of recommended emotions
+        
+    """
     
     # Generate embedding for the user input
     user_input_modified = ('I am looking for NON ENGLISH emotions that best describe my experience. ' +
@@ -68,6 +87,11 @@ def find_relevant_emotions(user_input, emotion_list, client, faiss_index, previo
     return recommended_emotions
 
 def find_relevant_base_emotions():
+    """Randomly select one emotion from each base emotion category. Only to be used in first pass.
+
+    Returns:
+        list[str]: list of recommended emotions
+    """
     base_emotion_positive = [
         'Joy',
         'Awe',
@@ -93,11 +117,35 @@ def find_relevant_base_emotions():
             np.random.choice(base_emotion_negative)]
 
 def get_descriptions(df_embeddings, emotions):
+    """Get descriptions of emotions from the embeddings dataframe.
+
+    Args:
+        df_embeddings (pandas.core.frame.DataFrame): DataFrame of embeddings and metadata
+        emotions (list): list of emotions to get descriptions for
+
+    Returns:
+        dict: dictionary of emotion descriptions
+    """
     return {emotion: f"<strong>{emotion}</strong> [{df_embeddings.loc[df_embeddings['Emotion'] == emotion, 'Language'].iloc[0]}]<br>{df_embeddings.loc[df_embeddings['Emotion'] == emotion, 'Description'].iloc[0]}"
             for emotion in emotions}
 
 
+##########################
+##### Route handlers #####
+##########################
+
 def handle_first_pass(user_input, session, df_embeddings, emotion_list):
+    """Handle the first pass of the emotion selection process.
+
+    Args:
+        user_input (str): user input of current state
+        session (flask.sessions.SecureCookieSession): session object storing user state
+        df_embeddings (pandas.core.frame.DataFrame): DataFrame of embeddings and metadata
+        emotion_list (list): list of emotions to choose from
+        
+    Returns:
+        render_template: render the results.html template with the first pass results
+    """
     
     if user_input[-1] != '.': 
         # Ensure user inputted sentence ends with a period
@@ -129,6 +177,19 @@ def handle_first_pass(user_input, session, df_embeddings, emotion_list):
                            descriptions=descriptions)
 
 def handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, client, faiss_index):
+    """Handle the selection of a new emotion.
+
+    Args:
+        user_input (str): user input of current state
+        chosen_emotion (str): emotion chosen by the user
+        df_embeddings (pandas.core.frame.DataFrame): DataFrame of embeddings and metadata
+        session (flask.sessions.SecureCookieSession): session object storing user state
+        client (OpenAI): OpenAI API client
+        faiss_index (faiss.swigfaiss.IndexFlatL2): FAISS index of embeddings
+
+    Returns:
+        render_template: render the results.html template with the updated results
+    """
     
     # Get user_input
     original_user_input = session['original_user_input']
@@ -177,6 +238,19 @@ def handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, clie
                            descriptions=descriptions)
     
 def handle_rewind_to_emotion(target_emotion, target_set_index, df_embeddings, session, client, faiss_index):
+    """Handle the rewinding to a previous emotion, and corresponding system state.
+
+    Args:
+        target_emotion (str): emotion to rewind to
+        target_set_index (int): index of the set to rewind to
+        df_embeddings (pandas.core.frame.DataFrame): DataFrame of embeddings and metadata
+        session (flask.sessions.SecureCookieSession): session object storing user state
+        client (OpenAI): OpenAI API client
+        faiss_index (faiss.swigfaiss.IndexFlatL2): FAISS index of embeddings
+
+    Returns:
+        render_template: render the results.html template with the updated results
+    """
     
     # Get current state
     previous_emotions = session['previous_emotions']
@@ -237,6 +311,19 @@ def handle_rewind_to_emotion(target_emotion, target_set_index, df_embeddings, se
                             descriptions=descriptions)
     
 def handle_skip_emotions(df_embeddings, user_input, session, client, faiss_index):
+    """Handle the skipping of emotions.
+
+    Args:
+        df_embeddings (pandas.core.frame.DataFrame): DataFrame of embeddings and metadata
+        user_input (str): user input of current state
+        session (flask.sessions.SecureCookieSession): session object storing user state
+        client (OpenAI): OpenAI API client
+        faiss_index (faiss.swigfaiss.IndexFlatL2): FAISS index of embeddings
+
+    Returns:
+        render_template: render the results.html template with the updated results
+    """
+    
     original_user_input = session['original_user_input']
     
     # Get previous emotions
@@ -280,6 +367,17 @@ def handle_skip_emotions(df_embeddings, user_input, session, client, faiss_index
                            descriptions=descriptions)
     
 def handle_finish(df_embeddings, user_input, session):
+    """Handle the printing of the receipt with emotions from collection.
+
+    Args:
+        df_embeddings (pandas.core.frame.DataFrame): DataFrame of embeddings and metadata
+        user_input (str): original user input string of user experience
+        session (flask.sessions.SecureCookieSession): session object storing user state
+
+    Returns:
+        render_template: re-render the results.html template with the current state
+    """
+    
     # Get final data
     original_user_input = session['original_user_input']  
     
@@ -308,6 +406,16 @@ def handle_finish(df_embeddings, user_input, session):
     
     
 def handle_update_collection(data, session):
+    """Handle the addition or removal of an emotion from the collection.
+
+    Args:
+        data (dict): dictionary containing the action and emotion to be added/removed
+        session (flask.sessions.SecureCookieSession): session object storing user state
+
+    Returns:
+        jsonify: JSON response indicating success
+    """
+    
     action = data.get('action')
     emotion = data.get('emotion')
     
