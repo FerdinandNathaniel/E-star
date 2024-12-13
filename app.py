@@ -1,15 +1,14 @@
 import os
-import time
-from openai import OpenAI
+
 import pandas as pd
-import numpy as np
-import faiss
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from printing import print_emotion_collection
+
+from openai import OpenAI
+from flask import Flask, render_template, request, session
 
 import utils as utils
 
 app = Flask(__name__)
+# Has to be set for session variables, but 'unnecessary' for singular demo purposes
 app.secret_key = 'oooooooohsoseeeeecreeeeeeeet'
 
 # Set up OpenAI API access
@@ -17,6 +16,7 @@ api_key = os.environ.get('OPENAI_API_KEY')
 client = OpenAI(api_key=api_key)
 
 # Choose dataset to use, do not put file ending at the end
+# Allows for easy 'hotswapping' of used databases
 dataset_embeddings = "embeddings"
 
 # Load data
@@ -26,270 +26,63 @@ df_embeddings = pd.read_pickle('Data/Processed/' + dataset_embeddings + '.pkl')
 faiss_index = utils.get_faiss_index(df_embeddings)
 emotion_list = df_embeddings['Emotion'].tolist()
 
-def get_descriptions(emotions):
-    return {emotion: f"<strong>{emotion}</strong> [{df_embeddings.loc[df_embeddings['Emotion'] == emotion, 'Language'].iloc[0]}]<br>{df_embeddings.loc[df_embeddings['Emotion'] == emotion, 'Description'].iloc[0]}"
-            for emotion in emotions}
-
+##### Landing page #####
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
 
+##### First pass #####
 @app.route('/starting', methods=['POST'])
 def first_pass():
     
-    # Get user_input
     user_input = request.form.get('user_input')
-    if user_input[-1] != '.': 
-        # Ensure user inputted sentence ends with a period
-        user_input += '.'
-    
-    # Initialise session variables
-    session['previous_emotions'] = []
-    session['chosen_emotions'] = []
-    session['original_user_input'] = user_input
-    session['user_input'] = user_input
-    session['collection'] = []
 
-    # Get recommended_emotions
-    recommended_emotions = utils.find_relevant_base_emotions()
+    return utils.handle_first_pass(user_input, session, df_embeddings, emotion_list)
     
-    # Append recommended_emotions to previous_emotions
-    previous_emotions = session['previous_emotions']
-    for emotion in recommended_emotions:
-        previous_emotions.append(emotion)
-    
-    descriptions = get_descriptions(recommended_emotions)
-    return render_template('results.html', 
-                           emotions=recommended_emotions, 
-                           user_input=user_input, 
-                           previous_sets=[],
-                           current_prompt=user_input, 
-                           original_user_input=user_input,
-                           descriptions=descriptions)
-    
-
+##### Choose a new emotion #####
 @app.route('/wandering', methods=['POST'])
 def get_emotions():
     
-    # Get user_input
-    original_user_input = session['original_user_input']
     user_input = request.form.get('user_input')
-    
-    # Get previous emotions
-    previous_emotions = session['previous_emotions']
-    
-    # Create sets of previous emotions (groups of 3)
-    previous_sets = [previous_emotions[i:i+3] for i in range(0, len(previous_emotions), 3)]
-    
-    # Get chosen_emotion and add it to list of chosen emotions
-    chosen_emotions = session['chosen_emotions']
     chosen_emotion = request.form.get('chosen_emotion')
-    chosen_emotions.append(chosen_emotion)
     
-    # Find out the other emotions
-    other_emotions = previous_emotions[-3:].copy()
-    other_emotions.remove(chosen_emotion)
-    
-    # Append chosen emotion and other emotions to user input
-    user_input += f" I feel that '{chosen_emotion}' describes my experience better than '{other_emotions[0]}' and '{other_emotions[1]}'."
-    
-    # Get recommended_emotions
-    recommended_emotions = utils.find_relevant_emotions(
-        user_input=user_input, 
-        emotion_list=emotion_list, 
-        previous_emotions=previous_emotions, 
-        openai_client=client, 
-        faiss_index=faiss_index
-    )
-    
-    # Append recommended_emotions to previous_emotions
-    for emotion in recommended_emotions:
-        previous_emotions.append(emotion)
+    return utils.handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, client, faiss_index)
 
-    # Session has been modified at this point
-    session.modified = True
-    
-    # If no new emotions, inform the user
-    if not recommended_emotions:
-        descriptions = get_descriptions(recommended_emotions + previous_emotions)
-        return render_template('results.html', 
-                                emotions=recommended_emotions, 
-                                message="No new emotions found",
-                                user_input=user_input, 
-                                previous_sets = previous_sets,
-                                chosen_emotion=chosen_emotion, 
-                                original_user_input=original_user_input,
-                                descriptions=descriptions)
-
-    descriptions = get_descriptions(previous_emotions)
-    return render_template('results.html', 
-                           emotions=recommended_emotions, 
-                           user_input=user_input, 
-                           previous_sets = previous_sets,
-                           chosen_emotion=chosen_emotion, 
-                           chosen_emotions=chosen_emotions,
-                           original_user_input=original_user_input,
-                           descriptions=descriptions)
-
+##### Choose an old emotion #####
 @app.route('/rewind', methods=['POST'])
 def rewind_to_emotion():
-    # Get target emotion and set index
+    
     target_emotion = request.form.get('target_emotion')
     target_set_index = int(request.form.get('target_set_index'))
-    
-    # Get current state
-    previous_emotions = session['previous_emotions']
-    chosen_emotions = session['chosen_emotions']
-    original_user_input = session['original_user_input']
-    
-    # Calculate where to rewind to
-    emotions_per_set = 3
-    target_index = (target_set_index * emotions_per_set) + previous_emotions[target_set_index * emotions_per_set:
-                                                                             (target_set_index + 1) * emotions_per_set].index(target_emotion)
-    
-    # Rewind the states
-    # If emotion on first row is clicked, special case scenario......
-    # Calculate end index based on target_index ranges
-    end_index = ((target_index // 3) + 1) * 3 - 1  # 3 is emotions_per_set
-    previous_emotions = previous_emotions[:end_index + 1]
 
-    chosen_emotions = chosen_emotions[:target_set_index]
-    chosen_emotions.append(target_emotion)
-    
-    # Reconstruct user input from the beginning
-    user_input = original_user_input
-    for i in range(len(chosen_emotions)):
-        set_start = i * emotions_per_set
-        current_set = previous_emotions[set_start:set_start + emotions_per_set]
-        chosen = chosen_emotions[i]
-        others = [e for e in current_set if e != chosen]
-        user_input += f" I feel that '{chosen}' describes my experience better than '{others[0]}' and '{others[1]}'."
-    
-    # Update session
-    session['previous_emotions'] = previous_emotions
-    session['chosen_emotions'] = chosen_emotions
-    session['user_input'] = user_input
-    session.modified = True
-    
-    # Create sets of previous emotions
-    previous_sets = [previous_emotions[i:i+3] for i in range(0, len(previous_emotions), 3)]
-    
-    # Get new recommendations based on rewound state
-    recommended_emotions = utils.find_relevant_emotions(
-        user_input=user_input,
-        emotion_list=emotion_list,
-        previous_emotions=previous_emotions,
-        openai_client=client,
-        faiss_index=faiss_index
-    )
-    
-    # Append recommended_emotions to previous_emotions
-    for emotion in recommended_emotions:
-        previous_emotions.append(emotion)
-    
-    descriptions = get_descriptions(recommended_emotions + previous_emotions)
-    return render_template('results.html',
-                            emotions=recommended_emotions,
-                            user_input=user_input,
-                            previous_sets=previous_sets,
-                            chosen_emotions=chosen_emotions,
-                            original_user_input=original_user_input,
-                            descriptions=descriptions)
+    return utils.handle_rewind_to_emotion(target_emotion, target_set_index, df_embeddings, session, client, faiss_index)
 
-@app.route('/finish', methods=['POST'])
-def finish():
-    # Get final data
-    user_input = request.form.get('user_input')
-    original_user_input = session['original_user_input']  
-    
-    if session.get('collection'):
-        # Get descriptions without HTML formatting for printing
-        plain_descriptions = {
-            emotion: df_embeddings.loc[df_embeddings['Emotion'] == emotion, 'Description'].iloc[0]
-            for emotion in session['collection']
-        }
-        # Print the collection
-        print_emotion_collection(df_embeddings, original_user_input, session['collection'], plain_descriptions)
-        
-    latest_emotions = session['previous_emotions'][-3:]
-    previous_emotions = session['previous_emotions'][:-3]
-    previous_sets = [previous_emotions[i:i+3] for i in range(0, len(previous_emotions), 3)]
-    chosen_emotions = session['chosen_emotions']
-    descriptions = get_descriptions(latest_emotions + previous_emotions)
-    
-    return render_template('results.html', 
-                            emotions=latest_emotions,
-                            message="Process finished and collection printed.", 
-                            user_input=user_input,
-                            previous_sets = previous_sets,
-                            chosen_emotions=chosen_emotions,
-                            original_user_input=original_user_input,
-                            descriptions=descriptions)
-
-@app.route('/update_collection', methods=['POST'])
-def update_collection():
-    data = request.get_json()
-    action = data.get('action')
-    emotion = data.get('emotion')
-    
-    # can prob be removed
-    if 'collection' not in session:
-        session['collection'] = []
-    
-    if action == 'add' and emotion not in session['collection']:
-        session['collection'].append(emotion)
-        session.modified = True
-    elif action == 'remove' and emotion in session['collection']:
-        session['collection'].remove(emotion)
-        session.modified = True
-    
-    return jsonify({'success': True})
-
+##### Choose no emotions #####
 @app.route('/skip', methods=['POST'])
 def skip_emotions():
-    original_user_input = session['original_user_input']
+    
     user_input = request.form.get('user_input')
     
-    # Get previous emotions
-    previous_emotions = session['previous_emotions']
-    
-    # Get the latest recommended emotions
-    skipped_emotions = previous_emotions[-3:]
-    
-    # Append message to user input
-    user_input += f" None of the following emotions describe my experience in any way: '{skipped_emotions[0]}', '{skipped_emotions[1]}', '{skipped_emotions[2]}'."
-    
-    # Update session user_input
-    session['user_input'] = user_input
-    
-    # Generate new recommended emotions
-    recommended_emotions = utils.find_relevant_emotions(
-        user_input=user_input,
-        emotion_list=emotion_list,
-        previous_emotions=previous_emotions,
-        openai_client=client,
-        faiss_index=faiss_index
-    )
-    
-    # Append recommended emotions to previous_emotions
-    previous_emotions.extend(recommended_emotions)
-    
-    # Update previous sets
-    previous_sets = [previous_emotions[i:i+3] for i in range(0, len(previous_emotions)-len(recommended_emotions), 3)]
-    
-    # Mark session as modified
-    session.modified = True
-    
-    # Get descriptions
-    descriptions = get_descriptions(previous_emotions)
-    
-    return render_template('results.html',
-                           emotions=recommended_emotions,
-                           user_input=user_input,
-                           previous_sets=previous_sets,
-                           chosen_emotions=session['chosen_emotions'],
-                           original_user_input=original_user_input,
-                           descriptions=descriptions)
+    return utils.handle_skip_emotions(df_embeddings, user_input, session, client, faiss_index)
 
+##### Print out receipt #####
+@app.route('/finish', methods=['POST'])
+def finish():
+    
+    # Ensure that refresh of page after printing keeps current user's input string
+    user_input = request.form.get('user_input')
+    
+    return utils.handle_finish(df_embeddings, user_input, session)
+
+##### Add/remove emotion to/from collection #####
+@app.route('/update_collection', methods=['POST'])
+def update_collection():
+    
+    # Get user action (add/remove) and target emotion
+    data = request.get_json()
+    
+    return utils.handle_update_collection(data, session)
+
+# Run main system
 if __name__ == '__main__':
     app.run(debug=True)
