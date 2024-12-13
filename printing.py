@@ -24,13 +24,28 @@ class ESC:
     DOUBLE_WIDTH_ON = '\x1b\x21\x20'
     NORMAL_SIZE = '\x1b\x21\x00'
     
-    # Paper
+    # Paper handling
     FEED_LINES = '\x1b\x64'
     FEED_UNITS = '\x1b\x4A'
-    FEED_REVERSE = '\x1b\x65'  # Reverse feed
-    CUT_PAPER = '\x1d\x56\x41\x00'
+    FEED_REVERSE = '\x1b\x65'
+    CUT_PAPER = '\x1d\x56\x41\x00' # if printer has a cutter
 
 def print_receipt(text, options=None):
+    """Prints a receipt with the given text and options. Uses the system's default printer. 
+    Made for ESC/POS printers, on MacOS and Linux (unsure about Windows support).
+    
+    Options:
+    - spacing: line spacing in dots
+    - align: text alignment ('left', 'center', 'right')
+    - copies: number of copies to print (default 1)
+    - feed_lines: number of lines to feed after the text (default 3)
+    - feed_end: number of dots to feed at the end before cutting
+
+    Args:
+        text (str): text to print on the receipt
+        options (dict, optional): dictionary containing printing options. Defaults to None.
+    """ 
+    
     if options is None:
         options = {}
     
@@ -60,7 +75,7 @@ def print_receipt(text, options=None):
             formatted_text += ESC.ALIGN_LEFT
     
     # Add the main text
-    formatted_text += '\n' + text     # Add an extra newline before the text
+    formatted_text += '\n' + text
     
     # Add line feeds at the end
     if 'feed_lines' in options:
@@ -68,11 +83,11 @@ def print_receipt(text, options=None):
     else:
         formatted_text += '\n\n\n'
     
-    # Add extra feed at the end before cutting
+    # Add extra feed at the end before (manual) cutting
     feed_end = options.get('feed_end', 30)  # Default 30 dots
     formatted_text += ESC.FEED_UNITS + chr(feed_end)
     
-    # Create a temporary file
+    # Create a temporary file for printing
     with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
         f.write(formatted_text)
         temp_filename = f.name
@@ -89,6 +104,10 @@ def print_receipt(text, options=None):
         
         # Execute the print command
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        
+        # Add timeout to avoid printer starting before the text is fully passed
+        time.sleep(0.2)
+        
         print(f"Print job sent successfully: {result.stdout}")
         
     except subprocess.CalledProcessError as e:
@@ -98,33 +117,11 @@ def print_receipt(text, options=None):
         # Clean up the temporary file
         os.unlink(temp_filename)
 
-def print_formatted_receipt():
-    receipt = (
-        ESC.BOLD_ON + ESC.DOUBLE_WIDTH_ON +
-        "RECEIPT\n" +
-        ESC.NORMAL_SIZE + ESC.BOLD_OFF +
-        "-----------------\n" +
-        "Regular text line\n" +
-        ESC.BOLD_ON +
-        "Bold text line\n" +
-        ESC.BOLD_OFF +
-        ESC.DOUBLE_HEIGHT_ON +
-        "Tall text line\n" +
-        ESC.NORMAL_SIZE +
-        "-----------------\n"
-    )
-    
-    options = {
-        'copies': 1,
-        'spacing': 24,
-        'align': 'center',
-        'feed_lines': 4,
-        'feed_end': 100  # Increase this value for more feed at the end
-    }
-    
-    print_receipt(receipt, options)
-
 def print_full_receipt():
+    """
+    Print an example receipt with a full set of options.
+    """
+    
     receipt = (
         "\n\n\n\n\n" +
         ESC.ALIGN_CENTER +
@@ -147,15 +144,26 @@ def print_full_receipt():
         'copies': 1,
         'spacing': 24,
         'feed_lines': 4,
-        'feed_end': 50  # Increase this value for more feed at the end
+        'feed_end': 50
+        # 'align': 'center' # useless here since ESC.ALIGN_CENTER is already set
     }
     
-    time.sleep(0.5)
+    # Add timeout to avoid printer starting before the text is fully passed
+    time.sleep(0.2)
     
     print_receipt(receipt, options)
 
 def print_emotion_collection(df_embeddings, original_user_input, emotions, descriptions):
-    """Print a receipt containing the collected emotions and their descriptions."""
+    """
+    Print a receipt containing the collected emotions and their descriptions.
+    
+    Args:
+    df_embeddings (Pandas.DataFrame): DataFrame containing embeddings and metadata
+    original_user_input (str): original user input string
+    emotions (list): list of emotions to print
+    descriptions (dict): dictionary of descriptions for each emotion
+    """
+    
     receipt = (
         ESC.INIT +
         ESC.ALIGN_CENTER +
@@ -184,7 +192,8 @@ def print_emotion_collection(df_embeddings, original_user_input, emotions, descr
         'feed_end': 50
     }
     
-    time.sleep(0.5)
+    # Add timeout to avoid printer starting before the text is fully passed
+    time.sleep(0.2)
     
     print_receipt(receipt, options)
 
