@@ -5,11 +5,13 @@
         <p>{{ original_user_input }}</p>
     </div>
 
+    <!-- Create old emotions -->
     {% if previous_sets %}
         {% for set_index in range(previous_sets|length) %}
             <div class="emotion-set">
                 <div class="circle-container">
                     {% for emotion in previous_sets[set_index] %}
+                        <!-- Clicking on old emotion activates 'rewind' function -->
                         <form method="post" action="{{ url_for('rewind_to_emotion') }}">
                             <div class="emotion-button-container">
                                 <input type="hidden" name="user_input" value="{{ user_input }}">
@@ -30,10 +32,12 @@
         {% endfor %}
     {% endif %}
 
+    <!-- Create new emotions -->
     {% if emotions %}
         <div class="emotion-set">
             <div class="circle-container">
                 {% for emotion in emotions %}
+                    <!-- Clicking on a new emotion activates 'get emotion' function -->
                     <form method="post" action="{{ url_for('get_emotions') }}">
                         <div class="emotion-button-container">
                             <input type="hidden" name="user_input" value="{{ user_input }}">

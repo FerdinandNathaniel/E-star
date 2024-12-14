@@ -12,6 +12,7 @@
     <div class="container-fluid">
         <div class="row">
             {% if request.endpoint != 'index' %}
+            <!-- Creates the left sidebar with descriptions -->
             <div class="col-md-3 sidebar left-sidebar">
                 <div class="back-button-container">
                     <form method="post" action="{{ url_for('index') }}">
@@ -45,10 +46,12 @@
                 {% block content %}{% endblock %}
             </div>
             {% if request.endpoint != 'index' %}
+            <!-- Creates the right sidebar for the collection -->
             <div class="col-md-3 sidebar right-sidebar">
                 <div class="sidebar-content">
                     <div id="collection-panel" class="description-panel">
-                        <h4>My Collection</h4>
+                        <h4>Collected words</h4>
+                        <!-- Creates an item for each collected word/emotion -->
                         <div id="collection-list">
                             {% if session.collection %}
                                 {% for emotion in session.collection %}
@@ -60,6 +63,7 @@
                             {% endif %}
                         </div>
                     </div>
+                    <!-- Creates the finish/print button -->
                     <div class="finish-button-container">
                         <form method="post" action="{{ url_for('finish') }}">
                             <input type="hidden" name="user_input" value="{{ user_input }}">
@@ -71,6 +75,7 @@
             {% endif %}
         </div>
     </div>
+
     <!-- jQuery and Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     {% block scripts %}{% endblock %}
@@ -79,7 +84,8 @@
             const buttons = document.querySelectorAll('.circle-button');
             const descriptionText = document.getElementById('description-text');
             const guidelinesText = document.getElementById('guidelines-text');
-            
+
+            // Creates logic for showing descriptions in left sidebar when hovering over words
             buttons.forEach(button => {
                 button.addEventListener('mouseenter', function() {
                     descriptionText.innerHTML = this.getAttribute('data-description');
@@ -93,7 +99,7 @@
                 });
             });
 
-            // New collection functionality
+            // Logic for collection words and effects
             function updateCollection(action, emotion) {
                 // Check if emotion is already in collection
                 const existingItem = document.querySelector(`.collection-item[data-emotion="${emotion}"]`);
