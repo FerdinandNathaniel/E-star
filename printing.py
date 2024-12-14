@@ -28,7 +28,7 @@ class ESC:
     FEED_LINES = '\x1b\x64'
     FEED_UNITS = '\x1b\x4A'
     FEED_REVERSE = '\x1b\x65'
-    CUT_PAPER = '\x1d\x56\x41\x00' # if printer has a cutter
+    CUT_PAPER = '\x1d\x56\x41\x00'  # if printer has a cutter
 
 def print_receipt(text, options=None):
     """Prints a receipt with the given text and options. Uses the system's default printer. 
