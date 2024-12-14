@@ -1,11 +1,43 @@
+/* Set colour variables for easy colour swapping */
+:root {
+    --background-color-1: #f5f5f5;
+    --background-color-2: #e2e2df;
+    --primary-color: #f5f5f5;
+    --secondary-color: #56494c;
+    --tertiary-color: #3a2e39;
+    --grey-color: #f5f5f5;
+    --text-color: #56494c;
+    --sidebar-text-color: #57606f;
+    --remove-color: #ac5656;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
 body {
-    background-color: #f5f7fa;
+    background-color: var(--background-color-1);
 }
 
 h1 {
     margin-top: 30px;
     margin-bottom: 30px;
-    color: #2c3e50;
+    color: var(--tertiary-color);
+}
+
+.estar-title {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.subtitle {
+    margin-top: 5vh;
+    color: var(--secondary-color);
+}
+
+.user-input {
+    color: var(--background-color-2);
 }
 
 .circle-container {
@@ -14,44 +46,55 @@ h1 {
     flex-wrap: wrap;
 }
 
+.form-index {
+    color: var(--text-color);
+    caret-color: var(--secondary-color);
+}
+
+.form-index:active {
+    outline: none;
+}
+
+.form-index:focus {
+    outline: none;
+}
+
 .emotion-button-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin: 10px;
-    position: relative;  /* Change to relative positioning */
-    padding-bottom: 15px;  /* Add padding to account for absolute positioned button */
+    position: relative;
+    padding-bottom: 15px;
 }
 
 .circle-button {
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    margin: 0;  /* Remove margin */
+    margin: 0;
     border: none;
     font-size: 1.2em;
-    color: #fff;
-    /* Current suggestions - deep blue with slight purple undertone */
-    background-color: #546de5;
+    color: var(--text-color);
+    background-color: var(--primary-color);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    position: relative;  /* Add this */
+    position: relative;
 }
 
 .circle-button.greyed {
-    /* Previous unchosen - warm grey */
-    background-color: #8395a7;
+    background-color: var(--grey-color);
     cursor: pointer;
     opacity: 0.85;
 }
 
 .circle-button.chosen {
-    /* Chosen emotions - deep teal */
-    background-color: #10ac84;
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
 }
 
 .circle-button:hover {
@@ -62,6 +105,14 @@ h1 {
 
 .circle-button:hover .add-to-collection {
     opacity: 1;
+}
+
+.circle-button:active {
+    outline: none;
+}
+
+.circle-button:focus {
+    outline: none;
 }
 
 .emotion-set {
@@ -83,7 +134,8 @@ textarea {
 }
 
 .btn-success {
-    background-color: #10ac84;
+    background-color: var(--secondary-color);
+    color: var(--background-color-1);
     border: none;
     padding: 10px 25px;
     font-size: 1.1em;
@@ -92,14 +144,14 @@ textarea {
 }
 
 .btn-success:hover {
-    background-color: #0d916f;
-    transform: translateY(-2px);
+    background-color: var(--secondary-color);
+    opacity: 0.9;
+    transform: scale(1.05);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Remove the [title] related styles and add these new styles */
 .sidebar {
-    background-color: #fff;
+    background-color: var(--background-color-2);
     min-height: 100vh;
     border-right: 1px solid #dee2e6;
     padding: 20px;
@@ -109,24 +161,42 @@ textarea {
     position: sticky;
     top: 20px;
     padding: 15px;
-    background-color: #f8f9fa;
+    background-color: var(--background-color-1);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .description-panel h4 {
-    color: #2c3e50;
+    color: var(--tertiary-color);
     margin-bottom: 15px;
 }
 
 #description-text {
-    color: #57606f;
+    color: var(--sidebar-text-color);
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+#guidelines-text{
+    color: var(--sidebar-text-color);
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+#guidelines-text ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+#guidelines-text li {
+    margin-bottom: 10px;
+    color: var(--sidebar-text-color);
     font-size: 0.95em;
     line-height: 1.5;
 }
 
 .right-sidebar {
-    border-left: 1px solid #dee2e6;
+    border-left: var(--background-color-2);
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -152,7 +222,16 @@ textarea {
 .finish-button-container {
     position: sticky;
     bottom: 0;
-    background-color: #fff;
+    background-color: var(--background-color-2);
+    padding: 20px 0;
+    margin-top: auto;
+    border-top: 1px solid #dee2e6;
+}
+
+.back-button-container {
+    position: sticky;
+    top: 0;
+    background-color: var(--background-color-2);
     padding: 20px 0;
     margin-top: auto;
     border-top: 1px solid #dee2e6;
@@ -170,16 +249,16 @@ textarea {
 }
 
 .add-to-collection {
-    position: absolute;  /* Change back to absolute */
+    position: absolute;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 30px;  /* Make it smaller and circular */
+    width: 30px;
     height: 30px;
-    border-radius: 50%;  /* Make it circular */
+    border-radius: 50%;
     background-color: white;
-    color: #546de5;
-    border: 2px solid currentColor;
+    color: var(--secondary-color);
+    border: 2px solid var(--background-color-2);
     font-size: 16px;
     cursor: pointer;
     padding: 0;
@@ -190,10 +269,12 @@ textarea {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.add-to-collection:hover {
-    background-color: #546de5;
-    color: white;
+.add-to-collection:hover {  
     transform: translateX(-50%) scale(1.1);
+}
+
+.add-to-collection:focus {
+    outline: none;
 }
 
 .add-to-collection.in-collection {
@@ -213,12 +294,55 @@ textarea {
 .remove-from-collection {
     background: none;
     border: none;
-    color: #ff6b6b;
+    color: var(--remove-color);
     font-size: 20px;
     cursor: pointer;
     padding: 0 5px;
 }
 
 .remove-from-collection:hover {
-    color: #ff5252;
+    color: var(--remove-color);
+}
+
+.skip-button-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    width: 100%;
+}
+
+.skip-button {
+    background-color: var(--background-color-2) !important;
+    color: var(--secondary-color) !important;
+    border: 2px solid var(--secondary-color) !important;
+    padding: 8px 24px !important;
+    border-radius: 20px !important;
+    font-size: 1em !important;
+    transition: all 0.3s ease;
+}
+
+.skip-button:hover {
+    background-color: var(--secondary-color) !important;
+    color: var(--background-color-1) !important;
+    transform: scale(1.05);
+}
+
+.center-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.title-section {
+    margin-top: 15vh;
+}
+
+.input-section {
+    width: 100%;
+    max-width: 800px;
+    margin: 15vh;
 }
