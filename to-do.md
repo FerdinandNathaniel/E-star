@@ -4,6 +4,7 @@
 - After 10+ calls, it's increasingly likely there won't be enough options left for the 'recommender' in utils.find_relevant_emotions() to recommend 'far distance' emotiosn, leading to index out of bounds error when trying to retrieve a description from a None value.
 
 ### Short-term
+- When pushing the repo online, do a fresh install on new env to see which installs are actually necessary to run the program
 - Special characters get printed weirdly (é etc)
 - Make users able to change input on the fly
 - Make bold text in description be color of brown
