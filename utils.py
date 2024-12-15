@@ -16,7 +16,7 @@ def get_embedding(description, client, model="text-embedding-3-large"):
         CreateEmbeddingResponse: class representing metadata and the embedding itself
     """
     
-    # new lines can cause problems with accurate embedding
+    # newlines can cause problems with accurate embedding
     description = str(description).replace("\n", " ")
     
     return client.embeddings.create(input = description, model = model).data[0].embedding
