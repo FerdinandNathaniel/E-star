@@ -20,7 +20,7 @@ client = OpenAI(api_key=api_key)
 dataset_embeddings = "embeddings"
 
 # Load data
-df_embeddings = pd.read_pickle('Data/Processed/' + dataset_embeddings + '.pkl')
+df_embeddings = pd.read_pickle('data/processed/' + dataset_embeddings + '.pkl')
 
 # Prepare FAISS index
 faiss_index = utils.get_faiss_index(df_embeddings)
