@@ -2,6 +2,7 @@
 
 ### Bugs
 - After 10+ calls, it's increasingly likely there won't be enough options left for the 'recommender' in utils.find_relevant_emotions() to recommend 'far distance' emotiosn, leading to index out of bounds error when trying to retrieve a description from a None value.
+- Clicking on 'add to collection' just after clicking on an emotion will not register as the screen refreshes. Due to API call taking time, whilst not blocking any inputs from user, after which it refreshes page with information it had when user originally clicked the big emotion button.
 
 ### Short-term
 - When pushing the repo online, do a fresh install on new env to see which installs are actually necessary to run the program
@@ -23,8 +24,9 @@
   - Add extra context
   - More emotions
   - Add field for 'general familiarity' (for recommender system, start 'basic', delve deeper later)
-  - Have recommender system start with 'more familiar' / base emotions to allow for easier starting
+  - Add more modalities (spoken voice for each word by indigenous people, artworks, music, etc.)
 - Improve recommender system
   - Add scalars/weights to strengthen/weaken certain candidate recommendations based on various aspects (sentiment, language, ...)
+  - Have recommender system start with 'more familiar' / base emotions to allow for easier starting
 - Make it possible to explore the words within the system without a personal experience input prompt, and still collect your favourite words you come across.
 - Allow users to choose various forms of dataset to use (Include emotional actions or not, only certain types of content, etc.)
