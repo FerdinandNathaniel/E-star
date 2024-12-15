@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="center-container">
+        <div class="title-section">
+            <h1 class="text-center estar-title">E*star</h1>
+            <p class="text-center subtitle">E*star is a system to discover new words and emotions to help describe your experiences.</p>
+        </div>
+        <div class="input-section">
+            <form method="post" action="{{ url_for('first_pass') }}">
+                <div class="form-group">
+                    <textarea class="form-control form-index" name="user_input" rows="5" placeholder="Describe an experience you've had here to get started..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success btn-block">Submit</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
