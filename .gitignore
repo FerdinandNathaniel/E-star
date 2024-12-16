@@ -5,3 +5,6 @@
 # Ignore virtual environments
 .venv/
 .vscode/
+
+# Ignore full dictionary kept locally
+data/full_dictionary.xlsx
