@@ -2,9 +2,9 @@
 **/__pycache__/
 *.pyc
 
-# Ignore virtual environments
+# Ignore virtual environments and vscode config
 .venv/
 .vscode/
 
 # Ignore full dictionary kept locally
-data/full_dictionary.xlsx
+data/raw/full_dictionary.xlsx
