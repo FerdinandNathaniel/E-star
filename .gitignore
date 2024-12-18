@@ -8,3 +8,6 @@
 
 # Ignore full dictionary kept locally
 data/raw/full_dictionary.xlsx
+
+# Ignore local to-do list
+to-do.md
