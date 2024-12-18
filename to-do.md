@@ -30,3 +30,8 @@
   - Have recommender system start with 'more familiar' / base emotions to allow for easier starting
 - Make it possible to explore the words within the system without a personal experience input prompt, and still collect your favourite words you come across.
 - Allow users to choose various forms of dataset to use (Include emotional actions or not, only certain types of content, etc.)
+
+### Web deployment
+- See if portfolio can be a github pages, and then flask apps to be deployed on railway.app (current preference) or render (have free tiers)
+  - more expensive option is to use Webflow, and embed custom code within.
+- Gunicorn implementation
