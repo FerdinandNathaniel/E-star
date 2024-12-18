@@ -65,7 +65,8 @@ You may either know me as Ferdinand or Fabian, and I am an AI Expert at the Univ
 I am also a starting artist interested in using technology to help humans make better sense of the world (and themselves). Love anything to do with art&science, technology&creativity. Always feel free to hit me up for a short conversation.
 
 **Contact me by my work email**: fabian.kok@hu.nl
-**Online portfolio**: ferdinandnathaniel.github.io
+
+**Online portfolio**: [ferdinandnathaniel.github.io](https://ferdinandnathaniel.github.io)
 
 ## Acknowledgments
 This work has been made as part of my work within the Data Science Pool (DSP) at the University of Applied Science Utrecht (Hogeschool Utrecht), in The Netherlands, and part of the work done under the Responsible Applied Artificial InTelligence (RAAIT) program. Co-authors and great support being Stefan Leijnen and Marieke Peeters from the Research Group AI (Lectoraat AI) at the Hogeschool Utrecht.
