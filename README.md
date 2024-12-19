@@ -2,10 +2,10 @@
 
 E*star is an artwork initially made for the Creative AI Track of the NeurIPS 2024 conference held in Vancouver. Within this repository you will find the current state of the system behind the artwork, and any updates it may get into the future. 
 
-**Test out the system via this link**: .......
+**Test out the system via this** [link](https://e-star-production.up.railway.app)
 (For the printing to work you will need a receipt printer that accepts ESC/POS formatted text, set as default printer of your computer, but you can still peruse the system to your heart's content without.)
 
-**Other work of mine**: ferdinandnathaniel.github.io
+**Other work of mine**: [ferdinandnathaniel.github.io](https://ferdinandnathaniel.github.io)
 
 
 ## Project Goal
