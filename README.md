@@ -2,10 +2,8 @@
 
 E*star is an artwork initially made for the Creative AI Track of the NeurIPS 2024 conference held in Vancouver. Within this repository you will find the current state of the system behind the artwork, and any updates it may get into the future. 
 
-**Test out the system via this link**: .......
+**Test out the system via this** [link](https://e-star-production.up.railway.app)
 (For the printing to work you will need a receipt printer that accepts ESC/POS formatted text, set as default printer of your computer, but you can still peruse the system to your heart's content without.)
-
-**Other work of mine**: ferdinandnathaniel.github.io
 
 
 ## Project Goal
@@ -31,11 +29,11 @@ The idea is that for each subsequent pass, the context of the `user_input` gets 
 Users can collect words they deem to be well fitting of their experience, and in the end finish by printing out a receipt with their initial description of their experience and the words and descriptions of the emotions they've gathered.
 
 The main components of the system are:
-- An embedded emotions dataset (data/processed/embeddings.pkl): contains an easy to load dataset with all emotions and corresponding descriptions and embeddings, gained through putting `data/raw/emotions_dataset.xlsx` through an embedder as can be seen in `data/data_processing.ipynb`. Used directly through `app.py` as database whilst running.
+- An embedded emotions dataset (`data/processed/embeddings.pkl`): contains an easy to load dataset with all emotions and corresponding descriptions and embeddings, gained through putting `data/raw/emotions_dataset.xlsx` through an embedder as can be seen in `data/data_processing.ipynb`. Used directly through `app.py` as database whilst running.
 - An embedder: currently OpenAI's text-embedder-large. 
-- Flask main file (app.py): contains all logic for building the flask webapp, and the routes to take for each interaction with the webapp. 
-- Helper functions (utils.py): contains all helper functions (including logic for flask app routes) the program uses.
-- Front-end files (anything in static/ and templates/): the styling and content of all pages the flask app can route towards.
+- Flask main file (`app.py`): contains all logic for building the flask webapp, and the routes to take for each interaction with the webapp. 
+- Helper functions (`utils.py`): contains all helper functions (including logic for flask app routes) the program uses.
+- Front-end files (anything in `static/` and `templates/`): the styling and content of all pages the flask app can route towards.
 - Printer: a small mobile printer able to use ESC/POS commands. For this installation a 58mm width receipt printer was used. 
 
 ## Getting Started
