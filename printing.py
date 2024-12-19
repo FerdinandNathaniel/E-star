@@ -118,13 +118,18 @@ def print_receipt(text, options=None):
         # Add filename at the end
         cmd.append(temp_filename)
         
+        try:
         # Execute the print command
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            
+            # Add timeout to avoid printer starting before the text is fully passed
+            time.sleep(0.2)
+            
+            print(f"Print job sent successfully: {result.stdout}")
         
-        # Add timeout to avoid printer starting before the text is fully passed
-        time.sleep(0.2)
-        
-        print(f"Print job sent successfully: {result.stdout}")
+        except FileNotFoundError as e:
+            print(f"Printing failed: {e}")
+            print("Likely no printer configured on this system.")
         
     except subprocess.CalledProcessError as e:
         print(f"Printing failed: {e}")
