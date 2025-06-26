@@ -83,7 +83,7 @@ def find_relevant_emotions(user_input, emotion_list, client, faiss_index, previo
     recommended_emotions = []
     first_emotion_percentile = int(len(indices[0]) * 0.05)
     second_emotion_percentile = int(len(indices[0]) * 0.1)
-    third_emotion_percentile = int(len(indices[0]) * 0.4)
+    third_emotion_percentile = int(len(indices[0]) * 0.3)
     
     def get_emotion_from_percentile(start, end):
         #print out for debugging
@@ -95,14 +95,15 @@ def find_relevant_emotions(user_input, emotion_list, client, faiss_index, previo
             emotion = emotion_list[idx]
             if emotion not in previous_emotions and emotion not in recommended_emotions:
                 return emotion
-            else:
-                # grab a random emotion that is not in previous_emotions or recommended_emotions
-                try_num = 20
-                for t in range(try_num):
-                    print(f"finding random emotion, try {t+1}/{try_num}")
-                    random_emotion = np.random.choice(emotion_list)
-                    if random_emotion not in previous_emotions and random_emotion not in recommended_emotions:
-                        return random_emotion
+
+        # grab a random emotion that is not in previous_emotions or recommended_emotions
+        try_num = 20
+        for t in range(try_num):
+            print(f"finding random emotion, try {t+1}/{try_num}")
+            random_emotion = np.random.choice(emotion_list)
+            if random_emotion not in previous_emotions and random_emotion not in recommended_emotions:
+                return random_emotion
+            
         print(f"No valid emotion found")
         return None
     
