@@ -74,7 +74,7 @@ def find_relevant_emotions(user_input, emotion_list, client, faiss_index, previo
                            'This is a description of my experience: ' + 
                            user_input + 
                            ' Which emotion do you think best describes my experience?' + 
-                           ' I want NON ENGLISH emotions!')
+                           ' I want NON ENGLISH emotions! Only suggest English emotions if there are no other options available.')
     user_embedding = get_embedding(user_input_modified, client)
     user_embedding = np.array(user_embedding, dtype='float32').reshape(1, -1)
     distances, indices = faiss_index.search(user_embedding, len(emotion_list))
@@ -82,14 +82,28 @@ def find_relevant_emotions(user_input, emotion_list, client, faiss_index, previo
     # Filter out selected emotions
     recommended_emotions = []
     first_emotion_percentile = int(len(indices[0]) * 0.05)
-    second_emotion_percentile = int(len(indices[0]) * 0.10)
-    third_emotion_percentile = int(len(indices[0]) * 0.40)
+    second_emotion_percentile = int(len(indices[0]) * 0.1)
+    third_emotion_percentile = int(len(indices[0]) * 0.4)
     
     def get_emotion_from_percentile(start, end):
+        #print out for debugging
+        print(f"Finding emotion from indices {start} to {end} (percentiles {start/len(indices[0]):.2f} to {end/len(indices[0]):.2f})")
+        if start >= end or start < 0 or end > len(indices[0]):
+            print("Invalid range for indices, returning None")
+            return None
         for idx in indices[0][start:end]:
             emotion = emotion_list[idx]
             if emotion not in previous_emotions and emotion not in recommended_emotions:
                 return emotion
+            else:
+                # grab a random emotion that is not in previous_emotions or recommended_emotions
+                try_num = 20
+                for t in range(try_num):
+                    print(f"finding random emotion, try {t+1}/{try_num}")
+                    random_emotion = np.random.choice(emotion_list)
+                    if random_emotion not in previous_emotions and random_emotion not in recommended_emotions:
+                        return random_emotion
+        print(f"No valid emotion found")
         return None
     
     recommended_emotions.append(get_emotion_from_percentile(0, first_emotion_percentile))
@@ -150,14 +164,13 @@ def get_descriptions(df_embeddings, emotions):
 ##### Route handlers #####
 ##########################
 
-def handle_first_pass(user_input, session, df_embeddings, emotion_list):
+def handle_first_pass(user_input, session, df_embeddings):
     """Handle the first pass of the emotion selection process.
 
     Args:
         user_input (str): user input of current state
         session (flask.sessions.SecureCookieSession): session object storing user state
         df_embeddings (pandas.core.frame.DataFrame): DataFrame of embeddings and metadata
-        emotion_list (list): list of emotions to choose from
         
     Returns:
         render_template: render the results.html template with the first pass results
@@ -173,7 +186,6 @@ def handle_first_pass(user_input, session, df_embeddings, emotion_list):
     session['original_user_input'] = user_input
     session['user_input'] = user_input
     session['collection'] = []
-    session['emotion_list'] = emotion_list
 
     # Get recommended_emotions for the first pass
     recommended_emotions = find_relevant_base_emotions()
@@ -192,7 +204,7 @@ def handle_first_pass(user_input, session, df_embeddings, emotion_list):
                            original_user_input=user_input,
                            descriptions=descriptions)
 
-def handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, client, faiss_index):
+def handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, client, faiss_index, emotion_list):
     """Handle the selection of a new emotion.
 
     Args:
@@ -206,6 +218,8 @@ def handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, clie
     Returns:
         render_template: render the results.html template with the updated results
     """
+    
+    print(f"Session: {session}")
     
     # Get user_input
     original_user_input = session['original_user_input']
@@ -230,7 +244,7 @@ def handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, clie
     # Get recommended_emotions
     recommended_emotions = find_relevant_emotions(
         user_input=user_input, 
-        emotion_list=session['emotion_list'], 
+        emotion_list=emotion_list, 
         previous_emotions=previous_emotions, 
         client=client, 
         faiss_index=faiss_index
@@ -253,7 +267,7 @@ def handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, clie
                            original_user_input=original_user_input,
                            descriptions=descriptions)
     
-def handle_rewind_to_emotion(target_emotion, target_set_index, df_embeddings, session, client, faiss_index):
+def handle_rewind_to_emotion(target_emotion, target_set_index, df_embeddings, session, client, faiss_index, emotion_list):
     """Handle the rewinding to a previous emotion, and corresponding system state.
 
     Args:
@@ -307,7 +321,7 @@ def handle_rewind_to_emotion(target_emotion, target_set_index, df_embeddings, se
     # Get new recommendations based on rewound state
     recommended_emotions = find_relevant_emotions(
         user_input=user_input,
-        emotion_list=session['emotion_list'],
+        emotion_list=emotion_list,
         previous_emotions=previous_emotions,
         client=client,
         faiss_index=faiss_index
@@ -326,7 +340,7 @@ def handle_rewind_to_emotion(target_emotion, target_set_index, df_embeddings, se
                             original_user_input=original_user_input,
                             descriptions=descriptions)
     
-def handle_skip_emotions(df_embeddings, user_input, session, client, faiss_index):
+def handle_skip_emotions(df_embeddings, user_input, session, client, faiss_index, emotion_list):
     """Handle the skipping of emotions.
 
     Args:
@@ -359,7 +373,7 @@ def handle_skip_emotions(df_embeddings, user_input, session, client, faiss_index
     # Generate new recommended emotions
     recommended_emotions = find_relevant_emotions(
         user_input=user_input,
-        emotion_list=session['emotion_list'],
+        emotion_list=emotion_list,
         previous_emotions=previous_emotions,
         client=client,
         faiss_index=faiss_index

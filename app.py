@@ -25,7 +25,8 @@ import utils as utils
 
 app = Flask(__name__)
 # Has to be set for session variables, but 'unnecessary' for singular demo purposes
-app.secret_key = 'oooooooohsoseeeeecreeeeeeeet'
+# Randomly generate each time the app is run, saved states cause issues across versions
+app.secret_key = "oooohsooooseeeecret"
 
 # Set up OpenAI API access
 api_key = os.environ.get('OPENAI_API_KEY')
@@ -33,7 +34,7 @@ client = OpenAI(api_key=api_key)
 
 # Choose dataset to use, do not put file ending at the end
 # Allows for easy 'hotswapping' of used databases
-dataset_embeddings = "embeddings"
+dataset_embeddings = "embeddings_2025-06-25"
 
 # Load data
 df_embeddings = pd.read_pickle('data/processed/' + dataset_embeddings + '.pkl')
@@ -53,7 +54,7 @@ def first_pass():
     
     user_input = request.form.get('user_input')
 
-    return utils.handle_first_pass(user_input, session, df_embeddings, emotion_list)
+    return utils.handle_first_pass(user_input, session, df_embeddings)
     
 ##### Choose a new emotion #####
 @app.route('/wandering', methods=['POST'])
@@ -62,7 +63,7 @@ def get_emotions():
     user_input = request.form.get('user_input')
     chosen_emotion = request.form.get('chosen_emotion')
     
-    return utils.handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, client, faiss_index)
+    return utils.handle_get_emotions(user_input, chosen_emotion, df_embeddings, session, client, faiss_index, emotion_list)
 
 ##### Choose an old emotion #####
 @app.route('/rewind', methods=['POST'])
@@ -71,7 +72,7 @@ def rewind_to_emotion():
     target_emotion = request.form.get('target_emotion')
     target_set_index = int(request.form.get('target_set_index'))
 
-    return utils.handle_rewind_to_emotion(target_emotion, target_set_index, df_embeddings, session, client, faiss_index)
+    return utils.handle_rewind_to_emotion(target_emotion, target_set_index, df_embeddings, session, client, faiss_index, emotion_list)
 
 ##### Choose no emotions #####
 @app.route('/skip', methods=['POST'])
@@ -79,7 +80,7 @@ def skip_emotions():
     
     user_input = request.form.get('user_input')
     
-    return utils.handle_skip_emotions(df_embeddings, user_input, session, client, faiss_index)
+    return utils.handle_skip_emotions(df_embeddings, user_input, session, client, faiss_index, emotion_list)
 
 ##### Print out receipt #####
 @app.route('/finish', methods=['POST'])
