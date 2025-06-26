@@ -34,7 +34,7 @@ client = OpenAI(api_key=api_key)
 
 # Choose dataset to use, do not put file ending at the end
 # Allows for easy 'hotswapping' of used databases
-dataset_embeddings = "embeddings_2025-06-25"
+dataset_embeddings = "embeddings_2025-06-26"
 
 # Load data
 df_embeddings = pd.read_pickle('data/processed/' + dataset_embeddings + '.pkl')
